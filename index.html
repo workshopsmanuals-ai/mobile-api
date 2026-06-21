@@ -1,80 +1,551 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hello, Deno</title>
-  <link rel="preload" href="https://demo-styles.deno.deno.net/fonts/Moranga-Regular.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="preload" href="https://demo-styles.deno.deno.net/fonts/Moranga-Medium.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="preload" href="https://demo-styles.deno.deno.net/fonts/Recursive_Variable.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="stylesheet" href="https://demo-styles.deno.deno.net/styles.css">
-  <style>
-    img {
-      display: inline-block;
-      vertical-align: middle;
-    }
-  </style>
-</head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modern JavaScript Runtimes for Mobile App Backends | Complete Guide</title>
+<meta name="description" content="Node.js, Deno, and Bun compared for mobile app backends — performance differences, when each runtime fits, and how runtime choice affects API latency and scaling.">
+<meta name="keywords" content="JavaScript runtime mobile backend, Node.js vs Deno vs Bun, server-side JavaScript, mobile app backend runtime, Bun performance, Deno security model, Node.js API backend">
+<link rel="canonical" href="https://example.com/index.html">
 
+<meta property="og:type" content="article">
+<meta property="og:title" content="Modern JavaScript Runtimes for Mobile App Backends">
+<meta property="og:description" content="Comparing Node.js, Deno, and Bun for building backends that power mobile applications.">
+<meta property="og:url" content="https://example.com/index.html">
+<meta property="og:site_name" content="APK & Mobile App Guide">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Modern JavaScript Runtimes for Mobile App Backends">
+<meta name="twitter:description" content="Node.js, Deno, and Bun — how runtime choice shapes mobile backend performance.">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is Node.js still a good choice for mobile app backends in 2026?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Node.js remains the most widely deployed JavaScript runtime, with the largest ecosystem of libraries and the most production tooling, making it a safe default for most mobile backends."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What makes Bun different from Node.js?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Bun is built on a different JavaScript engine and bundles a runtime, package manager, and bundler into one tool, generally resulting in faster startup times and lower memory overhead than Node.js."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why would a backend use Deno instead of Node.js?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Deno has a built-in security model that restricts file, network, and environment access by default, along with native TypeScript support, which appeals to teams prioritizing security and simpler tooling."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does the choice of JavaScript runtime affect mobile app performance?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Indirectly, yes. A faster, more efficient runtime reduces API response times and server costs, which improves how responsive a mobile app feels even though the runtime itself runs on the backend, not the device."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can these runtimes be mixed within the same backend system?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Some teams run different services on different runtimes within a microservices architecture, choosing whichever runtime best fits each individual service's requirements."
+      }
+    }
+  ]
+}
+</script>
+
+<style>
+  :root{
+    --bg: #0B1220;
+    --bg-raised: #111B2E;
+    --panel-line: #1F2D45;
+    --text: #ECF1F8;
+    --text-dim: #8C9BB5;
+    --accent: #4FD8E0;
+    --accent-dim: #2B8B92;
+    --warn: #F0A85C;
+    --mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+    --sans: 'Sora', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+
+  body{
+    margin:0;
+    background: var(--bg);
+    background-image: radial-gradient(circle at 20% 0%, rgba(79,216,224,0.06), transparent 45%);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a{ color: var(--accent); text-decoration: none; }
+  a:hover{ text-decoration: underline; }
+  a:focus-visible, button:focus-visible{ outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .wrap{
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ---------- Header ---------- */
+  header.site-header{
+    position: sticky;
+    top:0;
+    z-index: 50;
+    background: rgba(11,18,32,0.88);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--panel-line);
+  }
+  .nav-row{
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 16px 24px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 16px;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  .brand .mark{
+    width:20px; height:20px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+    flex-shrink:0;
+  }
+  nav.main-nav{
+    display:flex;
+    gap: 24px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  nav.main-nav a{ color: var(--text-dim); }
+  nav.main-nav a:hover{ color: var(--accent); text-decoration:none; }
+  @media (max-width: 700px){ nav.main-nav{ display:none; } }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding: 64px 0 48px;
+  }
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    background: var(--bg-raised);
+    border: 1px solid var(--panel-line);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    margin-bottom: 22px;
+  }
+  .pill::before{ content:"▸"; font-size: 10px; }
+  h1{
+    font-size: clamp(30px, 4.8vw, 44px);
+    line-height: 1.12;
+    margin: 0 0 18px;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+  .hero p.lead{
+    font-size: 17px;
+    color: var(--text-dim);
+    max-width: 660px;
+    margin: 0 0 32px;
+  }
+
+  /* Runtime benchmark strip — signature element */
+  .bench{
+    background: var(--bg-raised);
+    border: 1px solid var(--panel-line);
+    border-radius: 14px;
+    padding: 22px 24px;
+  }
+  .bench-label{
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+  }
+  .bench-row{
+    display:flex;
+    align-items:center;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .bench-row:last-child{ margin-bottom:0; }
+  .bench-row .name{
+    font-family: var(--mono);
+    font-size: 13px;
+    width: 64px;
+    flex-shrink:0;
+    color: var(--text);
+  }
+  .bench-row .track{
+    flex:1;
+    height: 8px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 4px;
+    overflow:hidden;
+  }
+  .bench-row .fill{
+    height:100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+  }
+  .bench-row .pct{
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    width: 50px;
+    text-align:right;
+    flex-shrink:0;
+  }
+
+  /* ---------- Article ---------- */
+  article.content{
+    padding: 16px 0 56px;
+  }
+  .num-marker{
+    position: relative;
+    margin: 56px 0 18px;
+  }
+  .num-marker:first-of-type{ margin-top: 24px; }
+  .num-marker .bignum{
+    position: absolute;
+    top: -20px;
+    right: 0;
+    font-size: 64px;
+    font-weight: 800;
+    color: var(--bg-raised);
+    -webkit-text-stroke: 1px var(--panel-line);
+    z-index: 0;
+    user-select: none;
+    line-height: 1;
+  }
+  h2{
+    font-size: clamp(22px, 3.2vw, 28px);
+    margin: 0;
+    letter-spacing: -0.01em;
+    position: relative;
+    z-index: 1;
+    max-width: 80%;
+  }
+  h3{
+    font-size: 17px;
+    margin: 28px 0 10px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  p{ color: var(--text); margin: 0 0 16px; font-size: 16px; }
+
+  ul, ol{ margin: 0 0 18px; padding-left: 22px; color: var(--text); }
+  li{ margin-bottom: 10px; font-size: 16px; }
+  li strong{ color: var(--accent); font-weight: 600; }
+
+  /* Callout */
+  .callout{
+    background: var(--bg-raised);
+    border: 1px solid var(--panel-line);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin: 20px 0;
+    font-size: 15px;
+    position: relative;
+  }
+  .callout::before{
+    content:"";
+    position:absolute;
+    left:0; top:14px; bottom:14px;
+    width:3px;
+    background: var(--accent);
+    border-radius: 3px;
+  }
+  .callout strong{ color: var(--accent); font-family: var(--mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.07em; display:block; margin-bottom: 8px; }
+
+  /* Runtime pill cards */
+  .runtime-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin: 20px 0;
+  }
+  @media (max-width: 700px){ .runtime-grid{ grid-template-columns: 1fr; } }
+  .runtime-card{
+    background: var(--bg-raised);
+    border: 1px solid var(--panel-line);
+    border-radius: 12px;
+    padding: 18px;
+  }
+  .runtime-card .tag{
+    display:inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(79,216,224,0.1);
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-bottom: 10px;
+  }
+  .runtime-card h4{ margin: 0 0 8px; font-size: 16px; color: var(--text); }
+  .runtime-card p{ font-size: 14px; color: var(--text-dim); margin:0; }
+
+  /* FAQ */
+  .faq-item{
+    border-bottom: 1px solid var(--panel-line);
+    padding: 18px 0;
+  }
+  .faq-item:first-of-type{ border-top: 1px solid var(--panel-line); }
+  .faq-item h3{ margin: 0 0 8px; font-size: 16px; color: var(--text); font-weight: 600; }
+  .faq-item p{ margin:0; color: var(--text-dim); font-size: 15px; }
+
+  /* References */
+  .ref-list{ list-style:none; padding:0; margin: 14px 0 0; display:flex; flex-direction:column; gap:10px; }
+  .ref-list li{
+    background: var(--bg-raised);
+    border: 1px solid var(--panel-line);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+  .ref-list li a{ word-break: break-all; }
+
+  /* Footer */
+  footer{ padding: 40px 0 48px; border-top: 1px solid var(--panel-line); }
+  .footer-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    flex-wrap:wrap;
+    gap: 24px;
+  }
+  footer .brand{ margin-bottom: 10px; }
+  footer p{ color: var(--text-dim); font-size: 13.5px; max-width: 420px; }
+  .footer-links{ display:flex; flex-direction:column; gap:8px; font-size: 14px; }
+  .footer-links a{ color: var(--text-dim); }
+  .footer-links a:hover{ color: var(--accent); }
+  .footer-bottom{
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid var(--panel-line);
+    font-size: 12.5px;
+    color: #5A6A85;
+    font-family: var(--mono);
+  }
+</style>
+</head>
 <body>
-    <main>
-      <section>
-        <a href="https://deno.com/deploy">
-        </a>
-      <h1>
-        <p>
-          Hello, Deno!
-        </p>
-      </h1>
-      <p>
-        This little example is being served by <a href="https://deno.com/">Deno</a>.
-        You can run it locally or in porduction on <a href="https://deno.com/deploy">Deno Deploy</a> or other hosting platforms.
+
+<header class="site-header">
+  <div class="nav-row">
+    <div class="brand"><span class="mark"></span>APK &amp; Mobile App Guide</div>
+    <nav class="main-nav">
+      <a href="#runtimes">Runtimes</a>
+      <a href="#performance">Performance</a>
+      <a href="#choosing">Choosing One</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div class="pill">Backend Engineering · Server-Side JavaScript</div>
+      <h1>Modern JavaScript Runtimes for Mobile App Backends</h1>
+      <p class="lead">
+        The runtime running a mobile app's backend rarely gets noticed by end users, but it quietly shapes how fast an API responds, how much a server costs to run, and how easily a team can scale. <a href="https://loklokapkmod.com/" target="_blank" rel="noopener">https://loklokapkmod.com/</a> is one example of the kind of Android app ecosystem this backend infrastructure ultimately supports, which makes runtime choice worth understanding even outside a pure engineering context.
       </p>
-      <ul>
-        <li>Run it locally with<code>deno task dev</code></li>
-        <li>Deploy it to <a href="https://deno.com/deploy">Deno Deploy</a> via the CLI by running<code>deno deploy</code></li>
-        <li>Run it locally and share it publically by running <code>deno deploy --connected</code></li>
-      </ul>
-    </section>
-      <hr>
-    <section>
-      <h2>What's next?</h2>
+
+      <div class="bench">
+        <div class="bench-label">Relative Cold-Start Speed (illustrative)</div>
+        <div class="bench-row">
+          <span class="name">Node.js</span>
+          <div class="track"><div class="fill" style="width:62%"></div></div>
+          <span class="pct">~62%</span>
+        </div>
+        <div class="bench-row">
+          <span class="name">Deno</span>
+          <div class="track"><div class="fill" style="width:71%"></div></div>
+          <span class="pct">~71%</span>
+        </div>
+        <div class="bench-row">
+          <span class="name">Bun</span>
+          <div class="track"><div class="fill" style="width:94%"></div></div>
+          <span class="pct">~94%</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <article class="content">
+    <div class="wrap">
+
+      <div class="num-marker">
+        <span class="bignum">01</span>
+        <h2>Why the Runtime Choice Matters for Mobile Backends</h2>
+      </div>
       <p>
-        You can clone this example and deploy it to Deno Deploy in just a few clicks
-        <a href="https://app.deno.com/new?clone=https://github.com/denoland/examples&path=hello-world"><img src="https://deno.com/button" alt="Deploy on Deno"/></a>
+        A JavaScript runtime is the engine that actually executes server-side code — handling incoming requests, running application logic, and talking to databases. For a mobile app, the backend runtime sits entirely outside the device, but its performance characteristics directly affect what the user experiences: how quickly a feed loads, how responsive search feels, and how reliably the app behaves under heavy traffic.
       </p>
+      <p>
+        Mobile apps tend to generate frequent, small API calls rather than occasional large ones, so a runtime's efficiency at handling many concurrent, lightweight requests matters more than raw single-task speed. This is part of why JavaScript runtimes — built around non-blocking, event-driven execution — became the default choice for so much mobile-facing backend infrastructure in the first place.
+      </p>
+
+      <div class="num-marker" id="runtimes">
+        <span class="bignum">02</span>
+        <h2>The Three Major Runtimes Compared</h2>
+      </div>
+      <div class="runtime-grid">
+        <div class="runtime-card">
+          <span class="tag">Established</span>
+          <h4>Node.js</h4>
+          <p>The original server-side JavaScript runtime, built on Chrome's V8 engine. Massive ecosystem, mature tooling, and the safest default for most production mobile backends.</p>
+        </div>
+        <div class="runtime-card">
+          <span class="tag">Security-First</span>
+          <h4>Deno</h4>
+          <p>Built by Node's original creator with security as a core principle — no file, network, or environment access unless explicitly granted. Native TypeScript support out of the box.</p>
+        </div>
+        <div class="runtime-card">
+          <span class="tag">Performance-First</span>
+          <h4>Bun</h4>
+          <p>Built on a different engine (JavaScriptCore) and bundles a runtime, package manager, and bundler together. Known for fast startup times and lower memory overhead.</p>
+        </div>
+      </div>
+      <p>
+        Each of these handles JavaScript execution differently under the hood, but for a mobile backend developer the practical differences show up in startup latency, memory footprint, and how much existing tooling you can reuse without rewriting.
+      </p>
+
+      <div class="num-marker" id="performance">
+        <span class="bignum">03</span>
+        <h2>Where Performance Differences Actually Matter</h2>
+      </div>
+
+      <h3>Cold Starts in Serverless Environments</h3>
+      <p>Many mobile backends now run on serverless infrastructure, where functions spin up on demand rather than running constantly. A runtime with a faster cold-start time directly reduces the delay a mobile app experiences on its very first request after a period of inactivity.</p>
+
+      <h3>Concurrent Request Handling</h3>
+      <p>Mobile traffic is bursty — usage spikes during commute hours, after push notifications, or during a popular content release. A runtime's ability to handle thousands of simultaneous lightweight connections without excessive memory growth is central to keeping costs and latency predictable during those spikes.</p>
+
+      <h3>Memory Efficiency</h3>
+      <p>Lower memory overhead per instance means more concurrent processes can run on the same server hardware, which translates directly into infrastructure cost at scale — a meaningful factor for any app with a large, frequently-active mobile user base.</p>
+
+      <div class="callout">
+        <strong>Worth Remembering</strong>
+        None of these runtime differences are visible to a mobile app's UI directly. They show up indirectly — as faster load times, fewer timeout errors, and lower likelihood of degraded performance during traffic spikes.
+      </div>
+
+      <div class="num-marker" id="choosing">
+        <span class="bignum">04</span>
+        <h2>Choosing a Runtime for a Mobile Backend Project</h2>
+      </div>
       <ul>
-        <li>
-          <a href="https://docs.deno.com/examples">More examples in the Deno Docs</a>
-        </li>
-        <li>
-          <a href="https://deno.com/deploy">Deno Deploy Early Access</a>
-        </li>
+        <li><strong>Team familiarity</strong> — Node.js has the largest pool of experienced developers and the most third-party libraries, which reduces hiring and onboarding friction.</li>
+        <li><strong>Security requirements</strong> — apps handling sensitive data may benefit from Deno's permission-gated approach, which limits what server-side code can access by default.</li>
+        <li><strong>Cost sensitivity at scale</strong> — Bun's lower memory footprint and faster execution can meaningfully reduce infrastructure spend for very high-traffic backends.</li>
+        <li><strong>Existing codebase</strong> — most Node.js code runs on Bun and largely on Deno with minimal changes, so migration cost is rarely a hard blocker either way.</li>
       </ul>
-    </section>
-    </main>
-    <hr>
-    <footer>
-      <section>
-      <ul class="flex-btwn">
-        <li>
-          <a href="https://deno.com">BlueSky</a>
-        </li>
-        <li>
-          <a href="https://deno.com">Twitter</a>
-        </li>
-        <li>
-          <a href="https://deno.com">YouTube</a>
-        </li>
-        <li>
-          <a href="https://deno.com">Newsletter</a>
-        </li>
-        <li>
-          <a href="https://deno.com">Deno</a>
-        </li>
+      <p>
+        It's also common for teams to run a hybrid setup — keeping a stable Node.js core for most services while testing Bun for a latency-sensitive component, since these runtimes aren't mutually exclusive within a broader microservices architecture.
+      </p>
+
+      <h2>How This Connects to the Apps People Actually Use</h2>
+      <p>
+        Whether a mobile app is distributed through an official app store or installed directly as an APK, its backend still depends on a runtime making these same trade-offs between speed, memory, and reliability. The runtime is invisible to the end user, but it's one of the foundational decisions that determines whether an app feels instant or sluggish once it's actually in someone's hands.
+      </p>
+      <p>
+        According to the <a href="https://nodejs.org/en/about" target="_blank" rel="noopener">official Node.js documentation</a>, its event-driven, non-blocking I/O model was specifically designed to handle large numbers of simultaneous connections efficiently, which remains the core reason it became the default for API-heavy mobile backends. Meanwhile, the <a href="https://bun.sh/docs" target="_blank" rel="noopener">Bun documentation</a> outlines how its design — built from the ground up around speed, including a faster startup process and built-in tooling — targets exactly the kind of high-frequency, low-latency workloads that mobile-facing APIs generate.
+      </p>
+
+      <div class="num-marker" id="faq">
+        <span class="bignum">05</span>
+        <h2>Frequently Asked Questions</h2>
+      </div>
+
+      <div class="faq-item">
+        <h3>Is Node.js still a good choice for mobile app backends in 2026?</h3>
+        <p>Yes. Node.js remains the most widely deployed JavaScript runtime, with the largest ecosystem of libraries and the most production tooling, making it a safe default for most mobile backends.</p>
+      </div>
+      <div class="faq-item">
+        <h3>What makes Bun different from Node.js?</h3>
+        <p>Bun is built on a different JavaScript engine and bundles a runtime, package manager, and bundler into one tool, generally resulting in faster startup times and lower memory overhead than Node.js.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Why would a backend use Deno instead of Node.js?</h3>
+        <p>Deno has a built-in security model that restricts file, network, and environment access by default, along with native TypeScript support, which appeals to teams prioritizing security and simpler tooling.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Does the choice of JavaScript runtime affect mobile app performance?</h3>
+        <p>Indirectly, yes. A faster, more efficient runtime reduces API response times and server costs, which improves how responsive a mobile app feels even though the runtime itself runs on the backend, not the device.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Can these runtimes be mixed within the same backend system?</h3>
+        <p>Yes. Some teams run different services on different runtimes within a microservices architecture, choosing whichever runtime best fits each individual service's requirements.</p>
+      </div>
+
+      <h2 style="margin-top:48px;">References</h2>
+      <ul class="ref-list">
+        <li><a href="https://nodejs.org/en/about" target="_blank" rel="noopener">nodejs.org/en/about</a></li>
+        <li><a href="https://bun.sh/docs" target="_blank" rel="noopener">bun.sh/docs</a></li>
       </ul>
-      </section>
-    </footer>
+
+      <h2 style="margin-top:48px;">Final Thoughts</h2>
+      <p>
+        There's no universally "correct" JavaScript runtime for mobile backends — Node.js offers stability and ecosystem depth, Deno offers a tighter security model, and Bun offers raw speed and lower overhead. What matters is matching the runtime to the actual constraints of the project: team experience, traffic patterns, and how sensitive the system is to cost or latency at scale. Whichever runtime ends up powering a backend, its job is the same — keep responses fast and the system stable, quietly, in the background, every time someone opens the app. For a sense of what a deployed mobile backend actually looks like running in production, <a href="https://app-backend-core-03e906cc0acb.herokuapp.com/" target="_blank" rel="noopener">this example service</a> reflects the kind of lightweight, always-on setup many of these runtime choices end up powering.
+      </p>
+
+    </div>
+  </article>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-row">
+      <div>
+        <div class="brand"><span class="mark"></span>APK &amp; Mobile App Guide</div>
+        <p>An independent, informational resource covering the Android APK ecosystem, mobile streaming platforms, and general app installation practices.</p>
+      </div>
+      <div class="footer-links">
+        <a href="#runtimes">Runtimes</a>
+        <a href="#performance">Performance</a>
+        <a href="#choosing">Choosing One</a>
+        <a href="#faq">FAQ</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © 2026 APK &amp; Mobile App Guide. For educational and informational purposes only.
+    </div>
+  </div>
+</footer>
+
 </body>
 </html>
